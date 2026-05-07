@@ -41,6 +41,7 @@ s.delete;
 
 % Breaking down data matrix to more specified vectors
 time_data = data(:,1) ./ (1000); % Data is in millisec, simple elementwise conversion to seconds
+time_data = time_data - time_data(1);
 thrust_data = data(:,2);
 voltage_data = data(:,3);
 current_data = data(:,4);
@@ -52,7 +53,6 @@ mask = power_data > 0.5; % Mask to ignore
 specific_thrust(mask) = thrust_data(mask) ./ power_data(mask); % Thrust to Power Ratio
 
 % Plots
-
 figure;
 subplot(4,1,1);
 plot(time_data,thrust_data)
@@ -71,6 +71,9 @@ plot(time_data,current_data)
 grid on
 ylabel("Current, A")
 
+% Small issue with the specific thrust data, the data that actually matters only lies between [0,30]
+% At very low throttle the motor is spinning efficiently before it hits the high current regime. But it's misleading on the plot because it dominates the y axis.
+% I decided to leave it alone
 subplot(4,1,4);
 plot(time_data,specific_thrust)
 grid on
