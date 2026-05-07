@@ -162,8 +162,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    thrust_g = hx711_get_grams();
-    if (thrust_g < 0) thrust_g = -thrust_g;
+	thrust_g = hx711_get_grams();
+	if (thrust_g < 0) thrust_g = -thrust_g;
+	if (thrust_g > 5000.0f) thrust_g = 0.0f;  // spike rejection
 
     ADC_ChannelConfTypeDef sConfig = {0};
     sConfig.Rank = 1;
