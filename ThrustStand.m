@@ -21,6 +21,7 @@ idx = 0;
 
 % Reading everything else Loop
 tStart = tic;
+disp('Recording...') % Matlab Ready For Motor Start
 while toc(tStart) <= DURATION % While the elapsed time is not greater than 30s keep reading
 
     unparsed_line = readline(s);
@@ -28,7 +29,7 @@ while toc(tStart) <= DURATION % While the elapsed time is not greater than 30s k
 
     if numel(vals) == 4 && ~any(isnan(vals)) % If any values are NAN we dont want that data because its bad data
         idx = idx + 1;
-        DATA(idx , :) = vals'; % Transpose vals from row vector to column vector to add to data columns
+        DATA(idx , :) = vals'; % Transpose vals from column vector to row vector to add to data columns
     end
 
 end
@@ -51,3 +52,27 @@ mask = power_data > 0.5; % Mask to ignore
 specific_thrust(mask) = thrust_data(mask) ./ power_data(mask); % Thrust to Power Ratio
 
 % Plots
+
+figure;
+subplot(4,1,1);
+plot(time_data,thrust_data)
+title('A2212 Motor Characterization - Thrust Stand')
+grid on
+ylabel("Thrust, g")
+
+subplot(4,1,2);
+plot(time_data,voltage_data)
+grid on
+ylabel("Voltage, V")
+ylim([9 13])
+
+subplot(4,1,3);
+plot(time_data,current_data)
+grid on
+ylabel("Current, A")
+
+subplot(4,1,4);
+plot(time_data,specific_thrust)
+grid on
+ylabel("Specific Thrust, g/W")
+xlabel("time, s")
