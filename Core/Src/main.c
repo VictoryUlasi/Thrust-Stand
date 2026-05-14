@@ -50,7 +50,7 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 int32_t hx711_offset = 0;
-float hx711_scale = 200.9f;
+float hx711_scale = 104.26f; //scale_factor = (raw_with - raw_without) / known weight
 uint32_t adc_values[2] = {0};
 float thrust_g = 0.0f;
 float voltage = 0.0f;
@@ -82,7 +82,10 @@ bool hx711_is_ready(void)
 
 int32_t hx711_read(void)
 {
-    while (!hx711_is_ready());
+	uint32_t timeout = HAL_GetTick() + 1000;
+	while (!hx711_is_ready()) {
+	    if (HAL_GetTick() > timeout) return 0;
+	}
 
     int32_t data = 0;
 
