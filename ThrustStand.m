@@ -8,31 +8,40 @@ BAUD_RATE = 115200;
 
 % SerialPort
 s = serialport(COM_PORT,BAUD_RATE);
-s.configureTerminator("CR/LF"); % Line terminators from nucleo \r and \n
+s.Timeout = 5; % wait up to 5 seconds for each line
+s.configureTerminator("CR/LF"); % Line terminators from nucleo \r a nd \n
 s.flush("input"); % Clear old inputs to get fresh data from serialport
+disp('Reset Nucleo now...');
+pause(3); % wait 3 seconds for you to reset
+s.flush("input"); % flush again after reset
 
 % Read header
 HEADER = readline(s);
 disp(HEADER); % Make sure its current in console
 
-DURATION = 30; % How long we want to get data
+DURATION = 40; % How long we want to get data
 DATA = zeros((DURATION * 10 + 50),4); % Instantiate a matrix bigger than we need we will trim it later
 idx = 0;
 
 % Reading everything else Loop
 tStart = tic;
 disp('Recording...') % Matlab Ready For Motor Start
+wb = waitbar(0, 'Recording data...'); %Loadbar for DRAMATICS :)
 while toc(tStart) <= DURATION % While the elapsed time is not greater than 30s keep reading
-
-    unparsed_line = readline(s);
-    vals = str2double(split(unparsed_line,',')); % Parse str and convert numbers to double and save in array
-
-    if numel(vals) == 4 && ~any(isnan(vals)) % If any values are NAN we dont want that data because its bad data
-        idx = idx + 1;
-        DATA(idx , :) = vals'; % Transpose vals from column vector to row vector to add to data columns
+    try
+        unparsed_line = readline(s);
+        vals = str2double(split(unparsed_line,',')); % Parse str and convert numbers to double and save in array
+    
+        if numel(vals) == 4 && ~any(isnan(vals)) % If any values are NAN we dont want that data because its bad data
+            idx = idx + 1;
+            DATA(idx , :) = vals'; % Transpose vals from column vector to row vector to add to data columns
+        end
+        waitbar(toc(tStart) / DURATION, wb, sprintf('Recording... %.0f / %.0f s', toc(tStart), DURATION));
+    catch
+        % readline timed out, just continue
     end
-
 end
+close(wb);
 
 % Save to CSV
 data = DATA(1:idx,:);
@@ -79,3 +88,4 @@ plot(time_data,specific_thrust)
 grid on
 ylabel("Specific Thrust, g/W")
 xlabel("time, s")
+ylim([0 30])
